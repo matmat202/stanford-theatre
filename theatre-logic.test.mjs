@@ -46,5 +46,5 @@ eq("data: every run points at a program", A.films.every(f => f.s.every(([d, i]) 
 eq("data: Mary Poppins runs from Nov 5 2026", A.films.some(f => f.imdb === "tt0058331" && f.s.some(([d]) => d === "2026-11-05")), true);
 eq("data: films with no runs", A.films.filter(f => !f.s.length).length, 0);
 
-console.log(`${pass}/${pass + fail} checks pass`);
+console.log(`${pass}/${pass + fail} checks passed`);
 process.exit(fail ? 1 : 0);

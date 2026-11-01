@@ -11,6 +11,7 @@ the most different years.
     node site/theatre-logic.test.mjs
     test/run-shot.sh           # Electron render gate (search, card, URL reload, 390 px)
     python3 -m http.server -d site 8000   # then open http://127.0.0.1:8000/
+    ./publish.sh               # every gate above, then push to https://matmat202.github.io/stanford-theatre/
 
 ## How the pages are read
 Hand-made HTML from 1997 to 2026. Only two traits hold across every era: each film links to
