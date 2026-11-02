@@ -8,6 +8,8 @@ const label = f => `${esc(f.t)}${f.y ? ` <span class="meta">(${f.y})</span>` : "
 const pickBtn = f => `<button class="pick" data-id="${esc(f.id)}">${esc(f.t)}</button>${f.y ? ` <span class="meta">(${f.y})</span>` : ""}`;
 
 let A, byId;
+// Search results and the film card are redrawn in place; a screen reader hears this line (WCAG 4.1.3).
+const say = t => { $("status").textContent = t; };
 
 function showFilm(f) {
   const years = byYear(f, A.programs);
@@ -22,6 +24,7 @@ function showFilm(f) {
       `${g.dates.map(d => fmt(d, false)).join(", ")} <a class="meta" href="${programUrl(g.program)}">${esc(g.program.name)}</a>`).join("<br>")}</span>`).join("")}</div>
   </div>`;
   history.replaceState(null, "", "#" + encodeURIComponent(f.id));
+  say(`Showing ${f.t}${f.y ? ` (${f.y})` : ""}: ${f.s.length} run${f.s.length === 1 ? "" : "s"} in ${n} year${n === 1 ? "" : "s"}.`);
 }
 
 // consecutive runs from the same program -> one line: "Jan 17, Jan 18, Jan 20 Film Noir"
@@ -63,11 +66,12 @@ function onSearch() {
   const q = $("q").value;
   const hits = search(A.films, q, 15);
   $("film").innerHTML = "";
-  if (!q.trim()) { $("results").innerHTML = ""; return; }
+  if (!q.trim()) { $("results").innerHTML = ""; say(""); return; }
   if (hits.length === 1 && hits[0].t.toLowerCase() === q.trim().toLowerCase()) return showFilm(hits[0]);
   $("results").innerHTML = hits.length
     ? `<div class="card"><ul class="list">${hits.map(f => `<li>${pickBtn(f)} <span class="meta">· ${yearsShown(f)} yrs, ${f.s.length} runs</span></li>`).join("")}</ul></div>`
     : `<div class="card empty">No film matching “${esc(q)}” in the archive.</div>`;
+  say(hits.length ? `${hits.length}${hits.length === 15 ? " or more" : ""} film${hits.length === 1 ? "" : "s"} match.` : `No film matching “${q.trim()}” in the archive.`);
 }
 
 document.addEventListener("click", e => {
