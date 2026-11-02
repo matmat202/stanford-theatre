@@ -71,7 +71,7 @@ function onSearch() {
   $("results").innerHTML = hits.length
     ? `<div class="card"><ul class="list">${hits.map(f => `<li>${pickBtn(f)} <span class="meta">· ${yearsShown(f)} yrs, ${f.s.length} runs</span></li>`).join("")}</ul></div>`
     : `<div class="card empty">No film matching “${esc(q)}” in the archive.</div>`;
-  say(hits.length ? `${hits.length}${hits.length === 15 ? " or more" : ""} film${hits.length === 1 ? "" : "s"} match.` : `No film matching “${q.trim()}” in the archive.`);
+  say(hits.length ? `${hits.length}${hits.length === 15 ? " or more" : ""} ${hits.length === 1 ? "film matches" : "films match"}.` : `No film matching “${q.trim()}” in the archive.`);
 }
 
 document.addEventListener("click", e => {
