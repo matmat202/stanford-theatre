@@ -4,6 +4,9 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const fmt = (d, withYear = true) => `${MON[+d.slice(5, 7) - 1]} ${+d.slice(8)}${withYear ? ", " + d.slice(0, 4) : ""}`;
+// "Nov 5–8, 2026", "Oct 29 – Nov 1, 2026"; a run with no end on file is just its first day
+const span = (d, e, withYear = true) => !e ? fmt(d, withYear)
+  : `${fmt(d, false)}${d.slice(5, 7) === e.slice(5, 7) ? "–" + +e.slice(8) : " – " + fmt(e, false)}${withYear ? ", " + e.slice(0, 4) : ""}`;
 const label = f => `${esc(f.t)}${f.y ? ` <span class="meta">(${f.y})</span>` : ""}`;
 const pickBtn = f => `<button class="pick" data-id="${esc(f.id)}">${esc(f.t)}</button>${f.y ? ` <span class="meta">(${f.y})</span>` : ""}`;
 
@@ -39,7 +42,7 @@ function groupRuns(runs) {
 }
 
 function runList(rows, withYear) {
-  return `<ul class="list">${rows.map(r => `<li><span class="n">${r.started ? "since " : ""}${fmt(r.date, withYear && !r.started)}</span> &nbsp;${pickBtn(r.film)}
+  return `<ul class="list">${rows.map(r => `<li><span class="n">${r.started ? (r.end ? "until " + fmt(r.end, false) : "since " + fmt(r.date, false)) : span(r.date, r.end, withYear)}</span> &nbsp;${pickBtn(r.film)}
     <div class="meta">${esc(r.program.name)}</div></li>`).join("")}</ul>`;
 }
 

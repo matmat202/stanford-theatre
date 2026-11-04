@@ -77,14 +77,16 @@ export function thisWeekInPast(films, programs, today, days = 3) {
   return out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.film.t < b.film.t ? -1 : 1)));
 }
 
-// Runs starting today or later — or up to `lookback` days ago, since a date is the first day
-// of a run and a Thursday-Sunday run that began on Thursday is still on: [{date, film,
-// program, started}], soonest first; `started` marks a run that began before today.
+// Runs still on today or later: [{date, end, film, program, started}], soonest first;
+// `started` marks a run that began before today. A showing is [start, program, end?]; one
+// with no end on file (a single day, or a page that never printed one) is taken to last
+// `lookback` days, since a Thursday-Sunday run that began on Thursday is still on.
 export function upcoming(films, programs, today, lookback = 0) {
   const from = new Date(Date.parse(today + "T00:00:00Z") - lookback * 864e5).toISOString().slice(0, 10);
   const out = [];
-  for (const f of films) for (const [date, pi] of f.s)
-    if (date >= from) out.push({ date, film: f, program: programs.find(p => p.i === pi), started: date < today });
+  for (const f of films) for (const [date, pi, end] of f.s)
+    if (end ? end >= today : date >= from)
+      out.push({ date, end: end || null, film: f, program: programs.find(p => p.i === pi), started: date < today });
   return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.film.t < b.film.t ? -1 : 1)));
 }
 

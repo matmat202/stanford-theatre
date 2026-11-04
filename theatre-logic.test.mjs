@@ -34,6 +34,14 @@ eq("upcoming: today and later, soonest first", upcoming(F, P, "2026-11-01").map(
 eq("upcoming includes today", upcoming(F, P, "2026-11-05").length, 1);
 eq("upcoming lookback keeps a run that began 3 days ago", upcoming(F, P, "2026-11-08", 3).map(r => [r.date, r.started]), [["2026-11-05", true]]);
 eq("upcoming lookback stops at its edge", upcoming(F, P, "2026-11-09", 3).length, 0);
+// a run with its end on file lasts exactly to that end, whatever the lookback
+const R = [{ id: "r1", t: "Mary Poppins", y: 1964, s: [["2026-10-29", 0, "2026-11-01"], ["2026-11-05", 0, "2026-11-08"]] },
+  { id: "r2", t: "Short", y: 1950, s: [["2026-11-06", 0]] }, { id: "r3", t: "Long", y: 1951, s: [["2026-10-20", 0, "2026-11-30"]] }];
+eq("upcoming: a run is on through its end day", upcoming(R, P, "2026-11-08", 0).map(r => [r.film.id, r.date, r.started]),
+  [["r3", "2026-10-20", true], ["r1", "2026-11-05", true]]);
+eq("upcoming: an ended run is gone even inside the lookback", upcoming(R, P, "2026-11-02", 4).map(r => r.date),
+  ["2026-10-20", "2026-11-05", "2026-11-06"]);
+eq("upcoming: the end is passed through", upcoming(R, P, "2026-11-09", 0).map(r => r.end), ["2026-11-30"]);
 // 2026-11-02 05:30Z is still Nov 1 in Palo Alto (PST, UTC-8)
 eq("theatreToday is Palo Alto's date", theatreToday(new Date("2026-11-02T05:30:00Z")), "2026-11-01");
 eq("theatreToday after Palo Alto midnight", theatreToday(new Date("2026-11-02T08:30:00Z")), "2026-11-02");
