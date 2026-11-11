@@ -1,5 +1,8 @@
 // Pure functions over archive.json, shared by app.js and theatre-logic.test.mjs.
 // archive: {programs:[{i,file,name,from,to}], films:[{id,t,y,imdb,s:[[date,programIndex]]}]}
+// Every sort returns 0 on a full tie, so ties (28 same-title remakes, 37 films shown twice on
+// one date) keep archive order -- a stable sort's guarantee -- instead of whatever an
+// inconsistent comparator makes of them.
 // A showing date is the FIRST day of a run as the theatre printed it ("Dec 26-28" -> 12-26).
 
 export function norm(s) {
@@ -41,7 +44,7 @@ export function byYear(film, programs) {
     m.get(y).push({ date, program: programs.find(p => p.i === pi) });
   }
   return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1))
-    .map(([year, runs]) => ({ year: +year, runs: runs.sort((a, b) => (a.date < b.date ? -1 : 1)) }));
+    .map(([year, runs]) => ({ year: +year, runs: runs.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)) }));
 }
 
 // Distinct years a film played in.
@@ -52,7 +55,7 @@ export function yearsShown(film) {
 // Films ranked by the number of distinct years they played, then by runs.
 export function mostShown(films, limit = 25) {
   return films.map(f => [yearsShown(f), f.s.length, f])
-    .sort((a, b) => b[0] - a[0] || b[1] - a[1] || (a[2].t < b[2].t ? -1 : 1))
+    .sort((a, b) => b[0] - a[0] || b[1] - a[1] || (a[2].t < b[2].t ? -1 : a[2].t > b[2].t ? 1 : 0))
     .slice(0, limit).map(r => r[2]);
 }
 
@@ -74,7 +77,7 @@ export function thisWeekInPast(films, programs, today, days = 3) {
       if (Math.min(diff, 366 - diff) <= days) out.push({ date, film: f, program: programs.find(p => p.i === pi) });
     }
   }
-  return out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (a.film.t < b.film.t ? -1 : 1)));
+  return out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.film.t < b.film.t ? -1 : a.film.t > b.film.t ? 1 : 0));
 }
 
 // Runs still on today or later: [{date, end, film, program, started}], soonest first;
@@ -87,7 +90,7 @@ export function upcoming(films, programs, today, lookback = 0) {
   for (const f of films) for (const [date, pi, end] of f.s)
     if (end ? end >= today : date >= from)
       out.push({ date, end: end || null, film: f, program: programs.find(p => p.i === pi), started: date < today });
-  return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.film.t < b.film.t ? -1 : 1)));
+  return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.film.t < b.film.t ? -1 : a.film.t > b.film.t ? 1 : 0));
 }
 
 // Today's date on the theatre's clock (Palo Alto), not the viewer's.
